@@ -14,13 +14,33 @@ type AuthenticationResponse struct {
 	Token       string `json:"token"`
 }
 
+// UserInfo ...
+type UserInfo struct {
+	Username string
+	Token    string
+}
+
+var _userInfo UserInfo
+
+func SetUserInfo(userInfo UserInfo) {
+	_userInfo = userInfo
+}
+
+func GetUserInfo() UserInfo {
+	return _userInfo
+}
+
+func UserAuthenticated() bool {
+	return _userInfo.Token != ""
+}
+
 func Authenticate(username string, password string) (string, error) {
 	fmt.Printf("\nAuthenticate -> %s-%s", username, password)
 
 	BaseURL := "http://localhost:8080"
 	req := struct {
 		RequestType string `json:"type"`
-		Username    string `json:"userId"`
+		Username    string `json:"username"`
 		Password    string `json:"password"`
 	}{Username: username, Password: password, RequestType: "authenticate"}
 	reqBytes, err := json.Marshal(req)
