@@ -17,3 +17,11 @@ const (
 )
 
 var Names = []string{INTEGER, DECIMAL, STRING, CALCULATED, TIME, DATE, DATETIME, OBJECT}
+
+//
+//
+//class IntegerType extends GeneratedDataType {
+//constructor() {
+//super(INTEGER);
+//}
+//}

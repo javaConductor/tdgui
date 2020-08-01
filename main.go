@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"fyne.io/fyne"
 	"fyne.io/fyne/app"
+	"fyne.io/fyne/theme"
 	"fyne.io/fyne/widget"
 )
 
@@ -11,15 +12,19 @@ func main() {
 	t := Pc()
 	fmt.Println("ExpressionConstraint(main):", t)
 	a := app.New()
+
 	w := createMainScreen(a)
 	w.Resize(fyne.Size{Height: 200, Width: 500})
+
 	w.ShowAndRun()
 }
 
 var mainWindow fyne.Window
 
 func createMainScreen(a fyne.App) fyne.Window {
+
 	mainWindow = createAuthWindow(a)
+
 	return mainWindow
 }
 
@@ -42,12 +47,32 @@ func refresh(a fyne.App) {
 	mw.Close()
 }
 
+func createDataSetListWindow(a fyne.App) fyne.Window {
+	win := a.NewWindow("Data Sets")
+
+	return win
+}
+
+func createDataSetWindow(a fyne.App) fyne.Window {
+	win := a.NewWindow("Data Sets")
+
+	return win
+}
+
+func createObjectTypeEditorWindow(a fyne.App) fyne.Window {
+	win := a.NewWindow("Data Sets")
+
+	return win
+}
+
 func createLoginWindow(a fyne.App) fyne.Window {
 
 	win := a.NewWindow("Login")
 
 	userNameWidget := widget.NewEntry()
+	userNameWidget.SetPlaceHolder("USERNAME")
 	passwordWidget := widget.NewPasswordEntry()
+	passwordWidget.SetPlaceHolder("PASSWORD")
 	messageArea := widget.NewLabel("")
 	loginButton := widget.NewButton("Login!", func() {
 		token, err := Authenticate(userNameWidget.Text, passwordWidget.Text)
@@ -72,16 +97,17 @@ func createLoginWindow(a fyne.App) fyne.Window {
 	userNameWidget.OnChanged = updateButton
 	passwordWidget.OnChanged = updateButton
 
-	box := widget.NewVBox(
-		widget.NewLabel("Username"),
+	box := widget.NewHBox(
+		createToolbar(),
+		//widget.NewLabel("Username"),
 		userNameWidget,
-		widget.NewLabel("Password"),
+		//widget.NewLabel("Password"),
 		passwordWidget,
 		loginButton,
 		messageArea,
 	)
 	win.SetContent(box)
-	win.Resize(fyne.NewSize(200, 200))
+	//win.Resize(fyne.NewSize(200, 200))
 	updateButton("")
 	return win
 }
@@ -107,8 +133,12 @@ func createLogoutWindow(a fyne.App) fyne.Window {
 	return win
 }
 
-func showLogin(a fyne.App) {
-	win := createAuthWindow(a)
-	win.Resize(fyne.NewSize(200, 200))
-	win.Show()
+func createToolbar() fyne.CanvasObject {
+	return widget.NewToolbar(widget.NewToolbarAction(theme.MailComposeIcon(), func() { fmt.Println("New") }),
+		widget.NewToolbarSeparator(),
+		widget.NewToolbarSpacer(),
+		widget.NewToolbarAction(theme.ContentCutIcon(), func() { fmt.Println("Cut") }),
+		widget.NewToolbarAction(theme.ContentCopyIcon(), func() { fmt.Println("Copy") }),
+		widget.NewToolbarAction(theme.ContentPasteIcon(), func() { fmt.Println("Paste") }),
+	)
 }
