@@ -9,8 +9,6 @@ import (
 )
 
 func main() {
-	t := Pc()
-	fmt.Println("ExpressionConstraint(main):", t)
 	a := app.New()
 
 	w := createMainScreen(a)
@@ -47,24 +45,6 @@ func refresh(a fyne.App) {
 	mw.Close()
 }
 
-func createDataSetListWindow(a fyne.App) fyne.Window {
-	win := a.NewWindow("Data Sets")
-
-	return win
-}
-
-func createDataSetWindow(a fyne.App) fyne.Window {
-	win := a.NewWindow("Data Sets")
-
-	return win
-}
-
-func createObjectTypeEditorWindow(a fyne.App) fyne.Window {
-	win := a.NewWindow("Data Sets")
-
-	return win
-}
-
 func createLoginWindow(a fyne.App) fyne.Window {
 
 	win := a.NewWindow("Login")
@@ -83,6 +63,14 @@ func createLoginWindow(a fyne.App) fyne.Window {
 
 		SetUserInfo(UserInfo{userNameWidget.Text, token})
 		messageArea.SetText(fmt.Sprintf("Recieved token: %s", token))
+		dataSetSpecs, err := GetUserDataSets(userNameWidget.Text)
+		if err != nil {
+			messageArea.SetText(err.Error())
+			return
+		}
+
+		CreateDataSetSpecsWindow(a, dataSetSpecs).Show()
+
 		refresh(a)
 	})
 

@@ -6,7 +6,10 @@ import (
 	"fyne.io/fyne/widget"
 )
 
-func makeDataSpecWindow(a fyne.App, dataSetSpecs []DataSetSpec) fyne.Window {
+// CreateDataSetSpecsWindow ...
+func CreateDataSetSpecsWindow(a fyne.App, dataSetSpecs []DataSetSpec) fyne.Window {
+
+	fmt.Println("CreateDataSetSpecsWindow", dataSetSpecs)
 
 	win := a.NewWindow("Data Sets")
 	newDataSetButton := widget.NewButton("New Data Set ... ", func() {
@@ -37,12 +40,12 @@ func createDataSetView(a fyne.App, ds DataSetSpec) fyne.CanvasObject {
 
 		editButton := widget.NewButton("Edit ...", func() {
 			//editObjectSpec(objSpec)
-			fmt.Printf("Edit Object Spec: %s ", objSpec.Name)
+			fmt.Printf("\nEdit Object Spec: %s ", objSpec.Name)
 		})
 
 		generateButton := widget.NewButton("Generate ...", func() {
 			//editObjectSpec(objSpec)
-			fmt.Printf("Generate Object Spec: %s ", objSpec.Name)
+			fmt.Printf("\nGenerate Object Spec: %s ", objSpec.Name)
 		})
 
 		generateCount := widget.NewEntry()
@@ -56,3 +59,10 @@ func createDataSetView(a fyne.App, ds DataSetSpec) fyne.CanvasObject {
 	return view
 
 }
+
+//
+//func createObjectTypeEditorWindow(a fyne.App) fyne.Window {
+//	win := a.NewWindow("Data Sets")
+//
+//	return win
+//}
