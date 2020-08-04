@@ -81,13 +81,10 @@ func createLoginWindow(a fyne.App) fyne.Window {
 
 		SetUserInfo(UserInfo{userNameWidget.Text, token})
 		messageArea.SetText(fmt.Sprintf("Recieved token: %s", token))
-		dataSetSpecs, err := GetUserDataSets(userNameWidget.Text)
-		if err != nil {
-			messageArea.SetText(err.Error())
-			return
-		}
 
-		CreateDataSetSpecsWindow(a, dataSetSpecs).Show()
+		dssWin, err := NewDataSetSpecsWindow()
+
+		dssWin.window.Show()
 
 		refresh(a)
 	})

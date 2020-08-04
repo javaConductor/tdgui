@@ -4,14 +4,6 @@ import (
 	"time"
 )
 
-// Constraint ...
-//type Constraint interface {
-//	Name() string
-//	DisplayName() string
-//	Value() interface{}
-//}
-//
-//// ValueConstraint ...
 type Constraint struct {
 	Name        string      `json:"name"`
 	DisplayName string      `json:"displayName"`
