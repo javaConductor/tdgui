@@ -45,24 +45,6 @@ func refresh(a fyne.App) {
 	mw.Close()
 }
 
-func createDataSetListWindow(a fyne.App) fyne.Window {
-	win := a.NewWindow("Data Sets")
-
-	return win
-}
-
-func createDataSetWindow(a fyne.App) fyne.Window {
-	win := a.NewWindow("Data Sets")
-
-	return win
-}
-
-func createObjectTypeEditorWindow(a fyne.App) fyne.Window {
-	win := a.NewWindow("Data Sets")
-
-	return win
-}
-
 func createLoginWindow(a fyne.App) fyne.Window {
 
 	win := a.NewWindow("Login")

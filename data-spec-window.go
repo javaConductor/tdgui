@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"fyne.io/fyne/dialog"
 	"fyne.io/fyne/theme"
 
 	"fyne.io/fyne"
@@ -93,7 +94,7 @@ func makeDataSetTab(ds DataSetSpec) *widget.AccordionItem {
 	return ai
 }
 
-func createObjectSpecElement(objSpec ObjectSpec) fyne.CanvasObject {
+func createObjectSpecElement(dssName string, objSpec ObjectSpec) fyne.CanvasObject {
 	nameLabel := widget.NewEntry()
 	nameLabel.Text = objSpec.Name
 
@@ -102,6 +103,11 @@ func createObjectSpecElement(objSpec ObjectSpec) fyne.CanvasObject {
 	editButton := widget.NewButton("Edit ...", func() {
 		//editObjectSpec(objSpec)
 		fmt.Printf("\nEdit Object Spec: %s ", objSpec.Name)
+		win, err := NewObjectSetSpecWindow("", objSpec)
+		if err != nil {
+			dialog.NewError(err, nil)
+		}
+		(*win.window).Show()
 	})
 
 	generateButton := widget.NewButton("Generate ...", func() {
@@ -121,7 +127,7 @@ func createDataSetView(ds DataSetSpec) fyne.CanvasObject {
 
 	view := widget.NewVBox()
 	for _, objSpec := range ds.ObjectSpecList {
-		view.Append(createObjectSpecElement(objSpec))
+		view.Append(createObjectSpecElement(ds.Name, objSpec))
 	}
 	return view
 }
