@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"fyne.io/fyne/dialog"
+	"fyne.io/fyne/layout"
 	"fyne.io/fyne/theme"
 
 	"fyne.io/fyne"
@@ -14,7 +15,7 @@ func NewDataSetSpecsWindow() (*DataSetSpecsWindowObject, error) {
 	win := a.NewWindow("Data Sets")
 	dssWin := new(DataSetSpecsWindowObject)
 	dssWin.window = win
-	newDataSetButton := widget.NewButton("New Data Set ... ", func() {
+	newDataSetButton := widget.NewButtonWithIcon("New Data Set ... ", theme.DocumentCreateIcon(), func() {
 		fmt.Printf("NEW !!!")
 	})
 
@@ -103,7 +104,7 @@ func createObjectSpecElement(dssName string, objSpec ObjectSpec) fyne.CanvasObje
 	editButton := widget.NewButton("Edit ...", func() {
 		//editObjectSpec(objSpec)
 		fmt.Printf("\nEdit Object Spec: %s ", objSpec.Name)
-		win, err := NewObjectSetSpecWindow("", objSpec)
+		win, err := NewObjectSetSpecWindow(dssName+"."+objSpec.Name, objSpec)
 		if err != nil {
 			dialog.NewError(err, nil)
 		}
@@ -118,9 +119,16 @@ func createObjectSpecElement(dssName string, objSpec ObjectSpec) fyne.CanvasObje
 	generateCount := widget.NewEntry()
 	endLabel := widget.NewLabel("objects")
 
-	component := widget.NewHBox(nameLabel, editButton, generateButton, generateCount, endLabel)
-	component.Resize(fyne.NewSize(1000, 25))
-	return component
+	/// put left 3 components in box leave first one
+	left := widget.NewHBox(editButton, layout.NewSpacer(), generateButton, generateCount, endLabel)
+	/// create border layout with nameLabel: West and leftBox: East
+
+	container := fyne.NewContainerWithLayout(
+		layout.NewBorderLayout(nil, nil, nameLabel, left),
+		nameLabel, left,
+	)
+
+	return container
 }
 
 func createDataSetView(ds DataSetSpec) fyne.CanvasObject {

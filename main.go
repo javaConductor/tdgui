@@ -11,6 +11,7 @@ import (
 func main() {
 	a := app.New()
 
+	loadMetadata()
 	w := createMainScreen(a)
 	w.Resize(fyne.Size{Height: 200, Width: 500})
 

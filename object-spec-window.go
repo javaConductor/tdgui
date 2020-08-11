@@ -2,14 +2,15 @@ package main
 
 import (
 	"fmt"
+	"fyne.io/fyne/layout"
 
 	"fyne.io/fyne"
 	"fyne.io/fyne/widget"
 )
 
-func NewObjectSetSpecWindow(dss string, objectSpec ObjectSpec) (*ObjectSpecWindowObject, error) {
+func NewObjectSetSpecWindow(dssName string, objectSpec ObjectSpec) (*ObjectSpecWindowObject, error) {
 	a := fyne.CurrentApp()
-	win := a.NewWindow("Object Type")
+	win := a.NewWindow(dssName)
 	osWin := new(ObjectSpecWindowObject)
 	osWin.window = &win
 
@@ -70,36 +71,6 @@ func (osWin *ObjectSpecWindowObject) populate(ac *widget.AccordionContainer, fie
 	}
 }
 
-//func makeFieldTab(fld FieldSpec) *widget.AccordionItem {
-//	ai := widget.NewAccordionItem(fld.Name, createFieldEditorView(fld))
-//	return ai
-//}
-
-//
-//func createObjectSpecElement(objSpec ObjectSpec) fyne.CanvasObject {
-//	nameLabel := widget.NewEntry()
-//	nameLabel.Text = objSpec.Name
-//
-//	nameLabel.Resize(fyne.NewSize(200, 25))
-//
-//	editButton := widget.NewButton("Edit ...", func() {
-//		//editObjectSpec(objSpec)
-//		fmt.Printf("\nEdit Object Spec: %s ", objSpec.Name)
-//	})
-//
-//	generateButton := widget.NewButton("Generate ...", func() {
-//		//editObjectSpec(objSpec)
-//		fmt.Printf("\nGenerate Object Spec: %s ", objSpec.Name)
-//	})
-//
-//	generateCount := widget.NewEntry()
-//	endLabel := widget.NewLabel("objects")
-//
-//	component := widget.NewHBox(nameLabel, editButton, generateButton, generateCount, endLabel)
-//	component.Resize(fyne.NewSize(1000, 25))
-//	return component
-//}
-
 func createFieldEditorView(fld FieldSpec) fyne.CanvasObject {
 
 	//view := widget.NewVBox()
@@ -107,6 +78,26 @@ func createFieldEditorView(fld FieldSpec) fyne.CanvasObject {
 	//	view.Append(createObjectSpecElement(objSpec))
 	//}
 	//return view
+
 	l := &widget.Label{Text: fld.Name + " - " + fld.Type}
 	return l
+}
+
+type ConstraintName struct {
+	name        string
+	displayName string
+}
+
+func createConstraintCheckBoxes(possibleConstraints []ConstraintName, fieldConstraints map[string]*Constraint) fyne.CanvasObject {
+	var checkBoxes []fyne.CanvasObject
+	for _, cn := range possibleConstraints {
+		check := widget.NewCheck(cn.displayName, func(on bool) {
+			fmt.Println("checked", on)
+		})
+		check.SetChecked(fieldConstraints[cn.name] != nil)
+		checkBoxes = append(checkBoxes, check)
+	}
+
+	return fyne.NewContainerWithLayout(layout.NewVBoxLayout(),
+		checkBoxes...)
 }
