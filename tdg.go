@@ -10,7 +10,7 @@ import (
 
 const BaseURL = "http://localhost:8080"
 
-var metaData *Metadata
+var metaData *Metadata = nil
 
 func init() {
 	var err error
@@ -24,7 +24,7 @@ func GetMetadata() (*Metadata, error) {
 	if metaData != nil {
 		return metaData, nil
 	}
-	req := CreateGetMetadataRequest(GetUserInfo().Username, GetUserInfo().Token)
+	req := CreateGetMetadataRequest(GetUserInfo().Token)
 	reqBytes, err := json.Marshal(req)
 	if err != nil {
 		return nil, fmt.Errorf("imposssible marshalling error: %s", err.Error())
@@ -60,7 +60,7 @@ func GetMetadata() (*Metadata, error) {
 	}
 
 	fmt.Println("MetaData ", response.metadata)
-	return response.metadata, nil
+	return &response.metadata, nil
 }
 
 func GetUserDataSets(username string) ([]DataSetSpec, error) {

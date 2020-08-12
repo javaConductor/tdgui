@@ -10,20 +10,15 @@ import (
 
 func main() {
 	a := app.New()
-
-	loadMetadata()
 	w := createMainScreen(a)
 	w.Resize(fyne.Size{Height: 200, Width: 500})
-
 	w.ShowAndRun()
 }
 
 var mainWindow fyne.Window
 
 func createMainScreen(a fyne.App) fyne.Window {
-
 	mainWindow = createAuthWindow(a)
-
 	return mainWindow
 }
 
@@ -38,6 +33,7 @@ func createAuthWindow(a fyne.App) fyne.Window {
 
 	return w
 }
+
 func refresh(a fyne.App) {
 	mw := mainWindow
 

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"fyne.io/fyne/theme"
 	"sort"
 
 	"fyne.io/fyne/layout"
@@ -13,25 +14,25 @@ import (
 // FieldAndConstraints ...
 type FieldAndConstraints struct {
 	fieldSpec   FieldSpec
-	constraints map[string]Constraint
+	constraints map[string]*Constraint
 }
 
 // FieldSpecEditorObject ...
 type FieldSpecEditorObject struct {
 	FieldSpec
 	chUpdate           chan<- FieldAndConstraints
-	constraintsEditor  *fyne.CanvasObject
 	constraints        map[string]*Constraint
-	constraintsChannel chan map[string]*Constraint
-	component          *fyne.CanvasObject
+	constraintsChannel chan *Constraint
 	window             *fyne.Window
+	widget             *fyne.CanvasObject
+	key                string
 }
 
 // FieldSpecEditor ...
 type FieldSpecEditor interface {
-	Component() *fyne.CanvasObject
+	Widget() *fyne.CanvasObject
 	createView() error
-	refreshConstraints(map[string]*Constraint)
+	Key() string
 }
 
 // FieldTypeConstraints ...
@@ -51,7 +52,7 @@ func constraintsForType(typename string) (map[string]FieldTypeConstraints, error
 	typeConstraints := metadata.TypeInfo.TypeConstraints[typename]
 	typeConstraintDisplayNames := metadata.TypeInfo.TypeConstraintDisplayNames[typename]
 
-	var constraints map[string]FieldTypeConstraints
+	var constraints = make(map[string]FieldTypeConstraints, len(typeConstraints))
 	for constraintName, required := range typeConstraints {
 		ftc := FieldTypeConstraints{
 			Name:        constraintName,
@@ -62,43 +63,29 @@ func constraintsForType(typename string) (map[string]FieldTypeConstraints, error
 	return constraints, nil
 }
 
-// NewFieldSpecEditor ...
-func NewFieldSpecEditor(
-	objectSpecName string,
-	fielsSpec FieldSpec,
-	chUpdate chan<- FieldAndConstraints) (*FieldSpecEditor, error) {
-	constrantsChannel := make(chan map[string]*Constraint)
-
-	fieldSpecEditor := FieldSpecEditorObject{
-		chUpdate:           chUpdate,
-		constraintsChannel: constrantsChannel,
-	}
-	fieldSpecEditor.createView()
-	var f FieldSpecEditor = FieldSpecEditor(&fieldSpecEditor)
-	return &f, nil
+// Widget ...
+func (fse *FieldSpecEditorObject) Widget() *fyne.CanvasObject {
+	return fse.widget
 }
 
-// Component ...
-func (fse *FieldSpecEditorObject) Component() *fyne.CanvasObject {
-	return fse.component
+func (fse *FieldSpecEditorObject) Key() string {
+	return fse.key
 }
+
 func (fse *FieldSpecEditorObject) createView() error {
 
-	a := fyne.CurrentApp()
-	window := a.NewWindow("Data Sets")
 	content, err := fse.createContent()
 	if err != nil {
 		return err
 	}
-	window.SetContent(*content)
-	fse.window = &window
+	fse.widget = content
 
 	go func() {
 		select {
+
+		/// Constraint Editors send updates here to be added to field
 		case constraint := <-fse.constraintsChannel:
-			for name, v := range constraint {
-				fse.constraints[name] = v
-			}
+			fse.constraints[constraint.Name] = constraint
 		}
 	}()
 
@@ -109,7 +96,6 @@ func (fse *FieldSpecEditorObject) createContent() (*fyne.CanvasObject, error) {
 	typeChanged := func(s string) {
 		///
 		fse.FieldSpec.Type = s
-		var w *fyne.Window = fse.window
 
 		newContent, err := fse.createContent()
 		if err != nil {
@@ -117,7 +103,8 @@ func (fse *FieldSpecEditorObject) createContent() (*fyne.CanvasObject, error) {
 			fmt.Println("ERROR: Field", fse.FieldSpec.Name, s, err)
 			return
 		}
-		(*w).SetContent(*newContent)
+
+		(*fse.window).SetContent(*newContent)
 		fmt.Println("selected type ", s)
 	}
 
@@ -137,9 +124,17 @@ func (fse *FieldSpecEditorObject) createContent() (*fyne.CanvasObject, error) {
 
 	typeSelect := widget.NewSelect(constraintNames, typeChanged)
 
+	saveButton := widget.NewButtonWithIcon("", theme.DocumentSaveIcon(), func() {
+		fmt.Printf("Saving !!!")
+		fse.chUpdate <- FieldAndConstraints{
+			fieldSpec:   fse.FieldSpec,
+			constraints: fse.constraints,
+		}
+	})
+
 	topRow := fyne.NewContainerWithLayout(
 		layout.NewBorderLayout(nil, nil, fieldName, typeSelect),
-		fieldName, typeSelect,
+		fieldName, typeSelect, saveButton,
 	)
 
 	constraintsEditor := fse.createConstraintsEditor(possibleConstraints)
@@ -148,45 +143,58 @@ func (fse *FieldSpecEditorObject) createContent() (*fyne.CanvasObject, error) {
 	return &fc, nil
 }
 
-func (fse *FieldSpecEditorObject) refreshConstraints(fldConstraints map[string]*Constraint) {
-
-}
-
 func (fse *FieldSpecEditorObject) createConstraintsEditor(possibleConstraints map[string]FieldTypeConstraints,
 ) *fyne.CanvasObject {
 
 	/// create the check boxes
-	checkboxes := fse.createConstraintCheckBoxes(possibleConstraints, fse.constraints)
+	checkboxes := fse.createConstraintCheckBoxes(possibleConstraints)
 
 	//then each constraint editor to the right of the checkboxes
-	constraintEditors := make([]fyne.CanvasObject, len(possibleConstraints))
+	constraintEditors := make([]fyne.CanvasObject, 0, len(possibleConstraints))
 	constraintEditors = append(constraintEditors, checkboxes)
-
 	for name := range possibleConstraints {
-
-		constraintEditor := createConstraintEditor(name, fse.constraints[name])
+		constraintEditor := createConstraintEditor(name)
 		constraintEditors = append(constraintEditors, constraintEditor)
 	}
 	constraintEditorBox := fyne.CanvasObject(widget.NewVBox(constraintEditors...))
 	return &constraintEditorBox
 
 }
-func createConstraintEditor(name string, constraint *Constraint) fyne.CanvasObject {
-	return widget.NewLabel(name)
-}
 
-func (fse *FieldSpecEditorObject) createConstraintCheckBoxes(
-	possibleConstraints map[string]FieldTypeConstraints,
-	fieldConstraints map[string]*Constraint) fyne.CanvasObject {
+func (fse *FieldSpecEditorObject) createConstraintCheckBoxes(possibleConstraints map[string]FieldTypeConstraints) fyne.CanvasObject {
 	var checkBoxes []fyne.CanvasObject
 	for cn, ftc := range possibleConstraints {
 		check := widget.NewCheck(ftc.DisplayName, func(on bool) {
 			fmt.Println(ftc.DisplayName, on)
 		})
-		check.SetChecked(fieldConstraints[cn] != nil || ftc.Required)
+		check.SetChecked(fse.constraints[cn] != nil || ftc.Required)
 		checkBoxes = append(checkBoxes, check)
 	}
 
 	return fyne.NewContainerWithLayout(layout.NewVBoxLayout(),
 		checkBoxes...)
+}
+
+func createConstraintEditor(name string) fyne.CanvasObject {
+	return widget.NewLabel(name)
+}
+
+// NewFieldSpecEditor ...
+func NewFieldSpecEditor(
+	objectSpecName string,
+	fieldSpec FieldSpec,
+	chUpdate chan<- FieldAndConstraints) (*FieldSpecEditor, error) {
+	constraintsChannel := make(chan *Constraint)
+
+	fieldSpecEditor := FieldSpecEditorObject{
+		chUpdate:           chUpdate,
+		constraintsChannel: constraintsChannel,
+		FieldSpec:          fieldSpec,
+	}
+	err := fieldSpecEditor.createView()
+	if err != nil {
+		return nil, err
+	}
+	var f = FieldSpecEditor(&fieldSpecEditor)
+	return &f, nil
 }

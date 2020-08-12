@@ -21,13 +21,13 @@ type GetMetaDataRequest struct {
 }
 
 type TDGMetadataResponse struct {
-	responseType string    `json:"type"`
-	metadata     *Metadata `json:"metadata"`
-	Error        string    `json:"error"`
+	responseType string   `json:"type"`
+	metadata     Metadata `json:"metadata"`
+	Error        string   `json:"error"`
 }
 
-func CreateGetMetadataRequest(username string, token string) GetMetaDataRequest {
-	return GetMetaDataRequest{Username: username, RequestType: "getUserDataSets", Token: token}
+func CreateGetMetadataRequest(token string) GetMetaDataRequest {
+	return GetMetaDataRequest{Username: "javaconductor@yahoo.com", RequestType: "getUserDataSets", Token: token}
 }
 
 ////////////////////////////////////////

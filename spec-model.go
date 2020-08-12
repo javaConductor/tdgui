@@ -10,18 +10,18 @@ type FieldSpec struct {
 
 // ObjectSpec ...
 type ObjectSpec struct {
-	Name        string                           `json:"name"`
-	Type        string                           `json:"type"`
-	Fields      []FieldSpec                      `json:"fieldSpecList"`
-	Constraints map[string]map[string]Constraint `json:"constraints"`
+	Name        string                            `json:"name"`
+	Type        string                            `json:"type"`
+	Fields      []FieldSpec                       `json:"fieldSpecList"`
+	Constraints map[string]map[string]*Constraint `json:"constraints"`
 }
 
 func (os *ObjectSpec) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&struct {
-		Name        string                           `json:"name"`
-		Type        string                           `json:"type"`
-		Fields      []FieldSpec                      `json:"fieldSpecList"`
-		Constraints map[string]map[string]Constraint `json:"constraints"`
+		Name        string                            `json:"name"`
+		Type        string                            `json:"type"`
+		Fields      []FieldSpec                       `json:"fieldSpecList"`
+		Constraints map[string]map[string]*Constraint `json:"constraints"`
 	}{
 		Name:        os.Name,
 		Type:        "ObjectSpec",
@@ -32,10 +32,10 @@ func (os *ObjectSpec) MarshalJSON() ([]byte, error) {
 
 func (os *ObjectSpec) UnmarshalJSON(b []byte) error {
 	var o = &struct {
-		Name        string                           `json:"name"`
-		Type        string                           `json:"type"`
-		Fields      []FieldSpec                      `json:"fieldSpecList"`
-		Constraints map[string]map[string]Constraint `json:"constraints"`
+		Name        string                            `json:"name"`
+		Type        string                            `json:"type"`
+		Fields      []FieldSpec                       `json:"fieldSpecList"`
+		Constraints map[string]map[string]*Constraint `json:"constraints"`
 	}{}
 	if err := json.Unmarshal(b, &o); err != nil {
 		return err
